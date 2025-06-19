@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To Rhodah — A Scrapbook of Us 📖</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&display=swap');
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Caveat', cursive;
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      background-attachment: fixed;
+      color: #5d4e75;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* Paper texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 25px 25px, rgba(255,255,255,0.2) 2%, transparent 50%),
+        radial-gradient(circle at 75px 75px, rgba(255,255,255,0.1) 2%, transparent 50%);
+      background-size: 100px 100px;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .scrapbook-page {
+      margin: 2rem auto;
+      max-width: 800px;
+      background: #fff9f0;
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      box-shadow: 
+        0 20px 40px rgba(0,0,0,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+      position: relative;
+      opacity: 0;
+      transform: translateY(50px) rotateX(10deg);
+      transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border: 3px solid #f4e4bc;
+      z-index: 1;
+    }
+    
+    .scrapbook-page.visible {
+      opacity: 1;
+      transform: translateY(0) rotateX(0deg);
+    }
+    
+    /* Decorative corners */
+    .scrapbook-page::before,
+    .scrapbook-page::after {
+      content: '';
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: #e8d5b7;
+      border-radius: 50%;
+    }
+    
+    .scrapbook-page::before {
+      top: 20px;
+      left: 20px;
+      transform: rotate(45deg);
+    }
+    
+    .scrapbook-page::after {
+      top: 20px;
+      right: 20px;
+      transform: rotate(45deg);
+    }
+
+    .title-page {
+      text-align: center;
+      background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+      border: 4px solid #ff6b9d;
+    }
+    
+    .title-page h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 3rem;
+      margin: 1rem 0;
+      color: #8e44ad;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    
+    .title-page::before {
+      content: '🌸';
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      font-size: 1.5rem;
+    }
+    
+    .title-page::after {
+      content: '🌸';
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 1.5rem;
+    }
+
+    .memory-container {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .memory-container:nth-child(even) {
+      flex-direction: row-reverse;
+    }
+
+    .photo-flip-container {
+      perspective: 1000px;
+      width: 300px;
+      height: 280px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 5;
+    }
+    
+    .photo-flip {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      cursor: pointer;
+      transform-origin: center center;
+    }
+    
+    .photo-flip.flipped {
+      transform: rotateY(180deg);
+    }
+    
+    .photo-front,
+    .photo-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      border: 8px solid #fff;
+      background: #fff;
+      top: 0;
+      left: 0;
+      transform-origin: center center;
+    }
+    
+    .photo-front img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 7px;
+    }
+    
+    .photo-back {
+      transform: rotateY(180deg);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      color: white;
+      font-size: 1rem;
+      text-align: center;
+      line-height: 1.3;
+      overflow-y: auto;
+    }
+    
+    .photo-back div {
+      max-height: 100%;
+      overflow-y: auto;
+      font-weight: 500;
+    }
+    
+    /* Polaroid styling */
+    .photo-front {
+      padding-bottom: 40px;
+      background: #fff;
+      position: relative;
+    }
+    
+    .photo-front::after {
+      content: 'Click to flip! 💕';
+      position: absolute;
+      bottom: 8px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #8e44ad;
+      font-weight: bold;
+    }
+
+    .memory-text {
+      flex: 1;
+      min-width: 300px;
+      font-size: 1.4rem;
+      line-height: 1.8;
+      color: #5d4e75;
+      position: relative;
+      padding: 1.5rem;
+      background: rgba(255,255,255,0.7);
+      border-radius: 15px;
+      border: 2px dashed #ff6b9d;
+    }
+    
+    /* Washi tape effect */
+    .memory-text::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: 20px;
+      width: 60px;
+      height: 20px;
+      background: linear-gradient(45deg, #ff6b9d, #ffeaa7);
+      border-radius: 2px;
+      transform: rotate(-3deg);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .final-message {
+      text-align: center;
+      font-size: 1.6rem;
+      line-height: 1.8;
+      background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+      border: 3px solid #81c784;
+      position: relative;
+    }
+    
+    .final-message::before {
+      content: '💐';
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      font-size: 1.5rem;
+    }
+    
+    .final-message::after {
+      content: '💐';
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 1.5rem;
+    }
+
+    .signature {
+      text-align: center;
+      padding: 2rem;
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.8rem;
+      color: #8e44ad;
+      background: rgba(255,255,255,0.9);
+      border-radius: 20px;
+      margin: 2rem auto;
+      max-width: 600px;
+      border: 2px solid #ff6b9d;
+      position: relative;
+    }
+    
+    .signature::before {
+      content: '✨';
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      animation: sparkle 2s infinite;
+    }
+    
+    .signature::after {
+      content: '✨';
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      animation: sparkle 2s infinite 1s;
+    }
+    
+    @keyframes sparkle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+    
+    .floating-hearts {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .heart {
+      position: absolute;
+      color: #ff6b9d;
+      font-size: 1.5rem;
+      animation: float 6s infinite linear;
+      opacity: 0.3;
+    }
+    
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.3;
+      }
+      90% {
+        opacity: 0.3;
+      }
+      100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .memory-container {
+        flex-direction: column !important;
+      }
+      
+      .photo-flip-container {
+        width: 280px;
+        height: 240px;
+      }
+      
+      .title-page h1 {
+        font-size: 2rem;
+      }
+      
+      .memory-text {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="floating-hearts"></div>
+  
+  <div class="scrapbook-page title-page">
+    <h1>To Rhodah 🌼</h1>
+    <p style="font-size: 1.5rem; margin: 2rem 0;">A Scrapbook of Our Beautiful Moments</p>
+    <p style="font-size: 1.2rem;">Before the day ends, I want to give you something created — like you once said you loved most. 💕</p>
+  </div>
+
+  <div class="scrapbook-page">
+    <div class="memory-container">
+      <div class="photo-flip-container">
+        <div class="photo-flip" onclick="flipPhoto(this)">
+          <div class="photo-front">
+            <img src="flexing.jpg" alt="Rhodah flexing her arm" />
+          </div>
+          <div class="photo-back">
+            <div>
+              I knew you were strong — but damn, girl. My heart never stood a chance 💪❤️
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="memory-text">
+        <strong>The Moment I Knew</strong><br>
+        You were just being you, strong and confident. But in that instant, I realized I was completely, hopelessly charmed by every part of who you are. 
+      </div>
+    </div>
+  </div>
+
+  <div class="scrapbook-page">
+    <div class="memory-container">
+      <div class="photo-flip-container">
+        <div class="photo-flip" onclick="flipPhoto(this)">
+          <div class="photo-front">
+            <img src="bus_hike.jpg" alt="Us on the way to a hike" />
+          </div>
+          <div class="photo-back">
+            <div>
+              On our way to a hike, but I was already falling deeper with every mile.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="memory-text">
+        <strong>Journey Together</strong><br>
+        Sometimes the best adventures happen before you even reach your destination. Just sitting beside you made even a simple bus ride feel like a story worth telling.
+      </div>
+    </div>
+  </div>
+
+  <div class="scrapbook-page">
+    <div class="memory-container">
+      <div class="photo-flip-container">
+        <div class="photo-flip" onclick="flipPhoto(this)">
+          <div class="photo-front">
+            <img src="maps.jpg" alt="Rhodah with maps" />
+          </div>
+          <div class="photo-back">
+            <div>
+              You’re holding the map — but somehow, you became my whole direction 🧭💛
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="memory-text">
+        <strong>My Navigation System</strong><br>
+        You are checking the route with such care, but all I could think was how every step feels right when it's with you. Lost or found, I'm exactly where I want to be.
+      </div>
+    </div>
+  </div>
+
+  <div class="scrapbook-page">
+    <div class="memory-container">
+      <div class="photo-flip-container">
+        <div class="photo-flip" onclick="flipPhoto(this)">
+          <div class="photo-front">
+            <img src="official_event.jpg" alt="Official school event" />
+          </div>
+          <div class="photo-back">
+            <div>
+              You clean up nice. Like scary nice. Like — let’s-run-away-and-get-married nice 💍😅
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="memory-text">
+        <strong>Effortless Grace</strong><br>
+        You have this way of making every moment feel more important just by being in it. Even formal events couldn't contain how naturally you shine.
+      </div>
+    </div>
+  </div>
+
+  <div class="scrapbook-page">
+    <div class="memory-container">
+      <div class="photo-flip-container">
+        <div class="photo-flip" onclick="flipPhoto(this)">
+          <div class="photo-front">
+            <img src="sassy_pose.jpg" alt="Hiking with sass" />
+          </div>
+          <div class="photo-back">
+            <div>
+              Mid-hike, she strikes. That pose? Dangerous. That girl? Mine. 😏
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="memory-text">
+        <strong>Trail Runway</strong><br>
+        You've always had this way of making everything — even a hiking trail — feel full of personality. Your confidence is absolutely infectious.
+      </div>
+    </div>
+  </div>
+
+  <div class="scrapbook-page">
+    <div class="memory-container">
+      <div class="photo-flip-container">
+        <div class="photo-flip" onclick="flipPhoto(this)">
+          <div class="photo-front">
+            <img src="blurry.jpg" alt="A blurry photo of her" />
+          </div>
+          <div class="photo-back">
+            <div>
+              The picture’s blurry — but to me, you’ve never been clearer. 💫
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="memory-text">
+        <strong>Perfect Imperfection</strong><br>
+        Sometimes the most beautiful moments can't be captured clearly by a camera — but they're crystal clear in the heart.
+      </div>
+    </div>
+  </div>
+
+  <div class="scrapbook-page final-message">
+    <h2 style="font-family: 'Dancing Script', cursive; font-size: 2.5rem; margin-bottom: 1rem;">This is just the beginning... 📖</h2>
+    <p>
+      I didn't get to hold your hand today. But I'm still holding you in every way I can. This gift may be late, but my love never is.
+    </p>
+    <p>
+      Happy birthday, Rhodah. You're joy, fire, mystery — and the reason my days feel like more than just time. I hope this scrapbook reminds you of what you mean to me.
+    </p>
+    <p style="font-weight: bold; color: #8e44ad;">
+      And this is only one scrapbook — I plan to fill a whole library. 📚💕
+    </p>
+  </div>
+
+  <div class="signature">
+    Made with heart, hope, and endless love<br />
+    — Yours, always and forever ✨
+  </div>
+
+  <script>
+    // Flip photo functionality
+    function flipPhoto(element) {
+      element.classList.toggle('flipped');
+    }
+
+    // Intersection Observer for page animations
+    const pages = document.querySelectorAll('.scrapbook-page');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { 
+      threshold: 0.1,
+      rootMargin: '50px'
+    });
+
+    pages.forEach(page => observer.observe(page));
+
+    // Floating hearts animation
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.innerHTML = Math.random() > 0.5 ? '💕' : '💖';
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+      heart.style.fontSize = (Math.random() * 10 + 15) + 'px';
+      
+      document.querySelector('.floating-hearts').appendChild(heart);
+      
+      setTimeout(() => {
+        heart.remove();
+      }, 8000);
+    }
+
+    // Create hearts periodically
+    setInterval(createHeart, 3000);
+    
+    // Initial hearts
+    for(let i = 0; i < 5; i++) {
+      setTimeout(createHeart, i * 1000);
+    }
+
+    // Add some sparkle to photos on hover
+    document.querySelectorAll('.photo-flip-container').forEach(container => {
+      container.addEventListener('mouseenter', function() {
+        this.style.transform = 'scale(1.05) rotate(1deg)';
+        this.style.transition = 'transform 0.3s ease';
+      });
+      
+      container.addEventListener('mouseleave', function() {
+        this.style.transform = 'scale(1) rotate(0deg)';
+      });
+    });
+  </script>
+</body>
+</html>
